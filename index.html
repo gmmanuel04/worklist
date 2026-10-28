@@ -1,0 +1,442 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Worklist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --surface: #ffffff;
+    --fg: #1b1a17;
+    --muted: #6b6558;
+    --line: #e3dcce;
+    --accent: #b4442a;
+    --accent-soft: #f0d8ce;
+    --done: #9b9484;
+    --shadow: 0 1px 0 rgba(27,26,23,.04), 0 8px 24px -16px rgba(27,26,23,.18);
+    --modal-shadow: 0 20px 60px -20px rgba(27,26,23,.35);
+    --display: "Fraunces", Georgia, serif;
+    --body: "Inter", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16140f; --surface: #1f1c17; --fg: #efe9dc; --muted: #8f8878;
+      --line: #2d2822; --accent: #e07a5b; --accent-soft: #3a2419; --done: #6b6558;
+      --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 24px -14px rgba(0,0,0,.6);
+      --modal-shadow: 0 20px 60px -20px rgba(0,0,0,.8);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16140f; --surface: #1f1c17; --fg: #efe9dc; --muted: #8f8878;
+    --line: #2d2822; --accent: #e07a5b; --accent-soft: #3a2419; --done: #6b6558;
+    --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 24px -14px rgba(0,0,0,.6);
+    --modal-shadow: 0 20px 60px -20px rgba(0,0,0,.8);
+    color-scheme: dark;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--body); font-size: 15px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 80px;
+  }
+  .wrap { max-width: 620px; margin: 0 auto; }
+
+  header { margin-bottom: 28px; }
+  .eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(36px, 7vw, 52px); line-height: 1; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  .date { font-family: var(--display); font-style: italic; color: var(--muted); font-size: 17px; }
+
+  form.quick {
+    display: flex; gap: 8px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 6px; margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  input[type="text"], input[type="date"], textarea {
+    border: 0; background: transparent; color: var(--fg);
+    font: inherit; outline: none;
+  }
+  form.quick input { flex: 1; min-width: 0; padding: 10px 12px; }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  button {
+    border: 0; background: var(--accent); color: #fff;
+    font: inherit; font-weight: 600;
+    padding: 10px 18px; border-radius: 7px; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.05); }
+
+  .filters { display: flex; gap: 2px; margin-bottom: 10px; font-size: 13px; }
+  .filters button { background: transparent; color: var(--muted); padding: 6px 10px; border-radius: 6px; font-weight: 500; }
+  .filters button.active { background: var(--accent-soft); color: var(--accent); }
+  .filters .spacer { flex: 1; }
+  .clear { background: transparent; color: var(--muted); padding: 6px 10px; font-size: 13px; font-weight: 500; }
+  .clear:hover { color: var(--accent); }
+
+  ul { list-style: none; padding: 0; margin: 0;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; }
+  li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); }
+  li:first-child { border-top: 0; }
+  .check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--line); background: transparent;
+    cursor: pointer; display: grid; place-items: center;
+    padding: 0; flex-shrink: 0; margin-top: 2px;
+  }
+  .check:hover { border-color: var(--accent); }
+  li.done .check { background: var(--accent); border-color: var(--accent); }
+  li.done .check::after {
+    content: ""; width: 10px; height: 6px;
+    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+  .body { flex: 1; min-width: 0; cursor: pointer; }
+  .text { word-wrap: break-word; }
+  li.done .text { color: var(--done); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .meta {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    margin-top: 4px; font-size: 12px; color: var(--muted);
+  }
+  .meta .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); font-weight: 500;
+  }
+  .meta .pill.overdue { background: #fbe3dc; color: #a0321a; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .meta .pill.overdue { background: #4a1a0e; color: #ff9b7a; }
+  }
+  :root[data-theme="dark"] .meta .pill.overdue { background: #4a1a0e; color: #ff9b7a; }
+  .notes-preview {
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .del {
+    background: transparent; color: var(--muted);
+    padding: 4px 8px; font-size: 18px; line-height: 1;
+    opacity: 0; transition: opacity .15s;
+  }
+  li:hover .del { opacity: 1; }
+  .del:hover { color: var(--accent); }
+
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty p { margin: 0; }
+  .empty .mark { font-family: var(--display); font-style: italic; font-size: 20px; margin-bottom: 4px; color: var(--fg); }
+
+  footer { margin-top: 18px; display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 4px; }
+
+  /* Modal */
+  .scrim {
+    position: fixed; inset: 0;
+    background: rgba(27,26,23,.4);
+    display: none; place-items: center;
+    padding: 20px; z-index: 100;
+    backdrop-filter: blur(2px);
+  }
+  .scrim.open { display: grid; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--modal-shadow);
+    width: 100%; max-width: 460px;
+    padding: 24px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: 24px; line-height: 1.1;
+    margin: 0 0 4px; letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .modal .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--muted); margin-bottom: 6px;
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  .field input[type="text"],
+  .field input[type="date"],
+  .field textarea {
+    width: 100%; box-sizing: border-box;
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 7px; padding: 9px 11px;
+    font: inherit; color: var(--fg);
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--accent); outline: none;
+  }
+  .field textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+  .priority { display: flex; gap: 6px; }
+  .priority button {
+    flex: 1; background: var(--bg); color: var(--fg);
+    border: 1px solid var(--line); padding: 8px;
+    font-size: 13px; font-weight: 500; border-radius: 7px;
+  }
+  .priority button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .actions .cancel { background: transparent; color: var(--muted); }
+  .actions .cancel:hover { color: var(--fg); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Worklist</div>
+    <h1>Today, at the desk.</h1>
+    <div class="date" id="date"></div>
+  </header>
+
+  <form class="quick" id="form">
+    <input type="text" id="input" placeholder="What needs doing?" autocomplete="off" autofocus>
+    <button type="submit">Add</button>
+  </form>
+
+  <div class="filters">
+    <button data-filter="all" class="active">All</button>
+    <button data-filter="open">Open</button>
+    <button data-filter="done">Done</button>
+    <div class="spacer"></div>
+    <button class="clear" id="clear">Clear done</button>
+  </div>
+
+  <ul id="list"></ul>
+
+  <footer>
+    <span id="count">0 open</span>
+    <span>Saved on this device</span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="modal" role="dialog" aria-labelledby="modal-title">
+    <h2 id="modal-title">Task details</h2>
+    <div class="sub">Add anything that will help you pick this up later.</div>
+
+    <div class="field">
+      <label for="m-title">Task</label>
+      <input type="text" id="m-title">
+    </div>
+
+    <div class="field">
+      <label for="m-notes">Notes</label>
+      <textarea id="m-notes" placeholder="Context, links, next step…"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="m-due">Due date</label>
+      <input type="date" id="m-due">
+    </div>
+
+    <div class="field">
+      <label>Priority</label>
+      <div class="priority" id="m-priority">
+        <button type="button" data-p="low">Low</button>
+        <button type="button" data-p="med">Medium</button>
+        <button type="button" data-p="high">High</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="cancel" id="m-skip">Skip</button>
+      <button type="button" id="m-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = "worklist.v2";
+  let tasks = [];
+  let filter = "all";
+  let editingId = null;
+
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) tasks = JSON.parse(raw);
+  } catch (e) {}
+
+  const save = () => {
+    try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) {}
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const listEl = $("list");
+  const input = $("input");
+  const form = $("form");
+  const count = $("count");
+  const scrim = $("scrim");
+
+  $("date").textContent = new Date().toLocaleDateString(undefined, {
+    weekday: "long", month: "long", day: "numeric"
+  });
+
+  const todayISO = () => {
+    const d = new Date(); d.setHours(0,0,0,0);
+    return d.toISOString().slice(0,10);
+  };
+
+  const formatDue = (iso) => {
+    if (!iso) return null;
+    const d = new Date(iso + "T00:00:00");
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Tomorrow";
+    if (diff === -1) return "Yesterday";
+    if (diff < 0) return `${-diff}d overdue`;
+    if (diff < 7) return d.toLocaleDateString(undefined, { weekday: "short" });
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
+  const render = () => {
+    const shown = tasks.filter(t =>
+      filter === "all" ? true : filter === "open" ? !t.done : t.done
+    );
+    const container = document.getElementById("list");
+    container.innerHTML = "";
+
+    if (shown.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.innerHTML = tasks.length === 0
+        ? '<p class="mark">A quiet page.</p><p>Add the first thing you need to do.</p>'
+        : '<p class="mark">Nothing here.</p><p>Switch filters to see other tasks.</p>';
+      container.replaceWith(empty);
+      empty.id = "list";
+    } else {
+      const ul = document.createElement("ul");
+      ul.id = "list";
+      shown.forEach(t => {
+        const li = document.createElement("li");
+        if (t.done) li.classList.add("done");
+
+        const check = document.createElement("button");
+        check.className = "check"; check.setAttribute("aria-label", "Toggle");
+        check.onclick = (e) => { e.stopPropagation(); t.done = !t.done; save(); render(); };
+
+        const body = document.createElement("div");
+        body.className = "body";
+        const text = document.createElement("div");
+        text.className = "text"; text.textContent = t.text;
+        body.appendChild(text);
+
+        if (t.notes) {
+          const n = document.createElement("div");
+          n.className = "notes-preview"; n.textContent = t.notes;
+          body.appendChild(n);
+        }
+
+        const metaBits = [];
+        const dueLabel = formatDue(t.due);
+        if (dueLabel) {
+          const overdue = t.due && t.due < todayISO() && !t.done;
+          metaBits.push(`<span class="pill${overdue ? ' overdue' : ''}">${dueLabel}</span>`);
+        }
+        if (t.priority && t.priority !== "med") {
+          metaBits.push(`<span>${t.priority === "high" ? "High priority" : "Low priority"}</span>`);
+        }
+        if (metaBits.length) {
+          const meta = document.createElement("div");
+          meta.className = "meta"; meta.innerHTML = metaBits.join("");
+          body.appendChild(meta);
+        }
+
+        body.onclick = () => openModal(t.id);
+
+        const del = document.createElement("button");
+        del.className = "del"; del.setAttribute("aria-label", "Delete");
+        del.textContent = "×";
+        del.onclick = (e) => {
+          e.stopPropagation();
+          tasks = tasks.filter(x => x.id !== t.id);
+          save(); render();
+        };
+
+        li.appendChild(check);
+        li.appendChild(body);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+      container.replaceWith(ul);
+    }
+    const open = tasks.filter(t => !t.done).length;
+    count.textContent = open === 1 ? "1 open" : `${open} open`;
+  };
+
+  const openModal = (id) => {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
+    editingId = id;
+    $("m-title").value = t.text;
+    $("m-notes").value = t.notes || "";
+    $("m-due").value = t.due || "";
+    const p = t.priority || "med";
+    document.querySelectorAll("#m-priority button").forEach(b =>
+      b.classList.toggle("on", b.dataset.p === p));
+    scrim.classList.add("open");
+    setTimeout(() => $("m-notes").focus(), 50);
+  };
+
+  const closeModal = () => {
+    scrim.classList.remove("open");
+    editingId = null;
+  };
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    const id = Date.now() + Math.random();
+    tasks.unshift({ id, text, done: false, notes: "", due: "", priority: "med" });
+    input.value = "";
+    save(); render();
+    openModal(id);
+  };
+
+  $("m-save").onclick = () => {
+    if (editingId == null) return;
+    const t = tasks.find(x => x.id === editingId);
+    if (!t) return;
+    const newText = $("m-title").value.trim();
+    if (newText) t.text = newText;
+    t.notes = $("m-notes").value.trim();
+    t.due = $("m-due").value;
+    const on = document.querySelector("#m-priority button.on");
+    t.priority = on ? on.dataset.p : "med";
+    save(); render(); closeModal();
+  };
+
+  $("m-skip").onclick = closeModal;
+  scrim.onclick = (e) => { if (e.target === scrim) closeModal(); };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && scrim.classList.contains("open")) closeModal();
+  });
+
+  document.querySelectorAll("#m-priority button").forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll("#m-priority button").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+    };
+  });
+
+  document.querySelectorAll(".filters [data-filter]").forEach(btn => {
+    btn.onclick = () => {
+      filter = btn.dataset.filter;
+      document.querySelectorAll(".filters [data-filter]").forEach(b =>
+        b.classList.toggle("active", b === btn));
+      render();
+    };
+  });
+
+  $("clear").onclick = () => {
+    tasks = tasks.filter(t => !t.done); save(); render();
+  };
+
+  render();
+</script>
+
+</body></html>
